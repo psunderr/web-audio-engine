@@ -552,17 +552,18 @@ function isUndefined(arg) {
  * @module  fourier-transform
  *
  */
+'use strict'
 
 module.exports = function rfft (input, spectrum) {
-	if (!input) throw Error("Input waveform is not provided, pass input array.");
+	if (!input) throw Error("Input waveform is not provided, pass input array.")
 
-	var N = input.length;
+	var N = input.length
 
-	var k = Math.floor(Math.log(N) / Math.LN2);
+	var k = Math.floor(Math.log(N) / Math.LN2)
 
-	if (Math.pow(2, k) !== N) throw Error("Invalid array size, must be a power of 2.");
+	if (Math.pow(2, k) !== N) throw Error("Invalid array size, must be a power of 2.")
 
-	if (!spectrum) spectrum = new Array(N/2);
+	if (!spectrum) spectrum = new Array(N/2)
 
 	//.forward call
 	var n         = N,
@@ -577,198 +578,199 @@ module.exports = function rfft (input, spectrum) {
 		st1, cc1, ss1, cc3, ss3,
 		e,
 		a,
-		rval, ival, mag;
+		rval, ival, mag
 
-	reverseBinPermute(N, x, input);
+	reverseBinPermute(N, x, input)
 
 	for (var ix = 0, id = 4; ix < n; id *= 4) {
 		for (var i0 = ix; i0 < n; i0 += id) {
-			//sumdiff(x[i0], x[i0+1]); // {a, b}  <--| {a+b, a-b}
-			st1 = x[i0] - x[i0+1];
-			x[i0] += x[i0+1];
-			x[i0+1] = st1;
+			//sumdiff(x[i0], x[i0+1]) // {a, b}  <--| {a+b, a-b}
+			st1 = x[i0] - x[i0+1]
+			x[i0] += x[i0+1]
+			x[i0+1] = st1
 		}
-		ix = 2*(id-1);
+		ix = 2*(id-1)
 	}
 
-	n2 = 2;
-	nn = n >>> 1;
+	n2 = 2
+	nn = n >>> 1
 
 	while((nn = nn >>> 1)) {
-		ix = 0;
-		n2 = n2 << 1;
-		id = n2 << 1;
-		n4 = n2 >>> 2;
-		n8 = n2 >>> 3;
+		ix = 0
+		n2 = n2 << 1
+		id = n2 << 1
+		n4 = n2 >>> 2
+		n8 = n2 >>> 3
 		do {
 			if(n4 !== 1) {
 				for(i0 = ix; i0 < n; i0 += id) {
-					i1 = i0;
-					i2 = i1 + n4;
-					i3 = i2 + n4;
-					i4 = i3 + n4;
+					i1 = i0
+					i2 = i1 + n4
+					i3 = i2 + n4
+					i4 = i3 + n4
 
-					//diffsum3_r(x[i3], x[i4], t1); // {a, b, s} <--| {a, b-a, a+b}
-					t1 = x[i3] + x[i4];
-					x[i4] -= x[i3];
-					//sumdiff3(x[i1], t1, x[i3]);   // {a, b, d} <--| {a+b, b, a-b}
-					x[i3] = x[i1] - t1;
-					x[i1] += t1;
+					//diffsum3_r(x[i3], x[i4], t1) // {a, b, s} <--| {a, b-a, a+b}
+					t1 = x[i3] + x[i4]
+					x[i4] -= x[i3]
+					//sumdiff3(x[i1], t1, x[i3])   // {a, b, d} <--| {a+b, b, a-b}
+					x[i3] = x[i1] - t1
+					x[i1] += t1
 
-					i1 += n8;
-					i2 += n8;
-					i3 += n8;
-					i4 += n8;
+					i1 += n8
+					i2 += n8
+					i3 += n8
+					i4 += n8
 
-					//sumdiff(x[i3], x[i4], t1, t2); // {s, d}  <--| {a+b, a-b}
-					t1 = x[i3] + x[i4];
-					t2 = x[i3] - x[i4];
+					//sumdiff(x[i3], x[i4], t1, t2) // {s, d}  <--| {a+b, a-b}
+					t1 = x[i3] + x[i4]
+					t2 = x[i3] - x[i4]
 
-					t1 = -t1 * Math.SQRT1_2;
-					t2 *= Math.SQRT1_2;
+					t1 = -t1 * Math.SQRT1_2
+					t2 *= Math.SQRT1_2
 
-					// sumdiff(t1, x[i2], x[i4], x[i3]); // {s, d}  <--| {a+b, a-b}
-					st1 = x[i2];
-					x[i4] = t1 + st1;
-					x[i3] = t1 - st1;
+					// sumdiff(t1, x[i2], x[i4], x[i3]) // {s, d}  <--| {a+b, a-b}
+					st1 = x[i2]
+					x[i4] = t1 + st1
+					x[i3] = t1 - st1
 
-					//sumdiff3(x[i1], t2, x[i2]); // {a, b, d} <--| {a+b, b, a-b}
-					x[i2] = x[i1] - t2;
-					x[i1] += t2;
+					//sumdiff3(x[i1], t2, x[i2]) // {a, b, d} <--| {a+b, b, a-b}
+					x[i2] = x[i1] - t2
+					x[i1] += t2
 				}
 			} else {
 				for(i0 = ix; i0 < n; i0 += id) {
-					i1 = i0;
-					i2 = i1 + n4;
-					i3 = i2 + n4;
-					i4 = i3 + n4;
+					i1 = i0
+					i2 = i1 + n4
+					i3 = i2 + n4
+					i4 = i3 + n4
 
-					//diffsum3_r(x[i3], x[i4], t1); // {a, b, s} <--| {a, b-a, a+b}
-					t1 = x[i3] + x[i4];
-					x[i4] -= x[i3];
+					//diffsum3_r(x[i3], x[i4], t1) // {a, b, s} <--| {a, b-a, a+b}
+					t1 = x[i3] + x[i4]
+					x[i4] -= x[i3]
 
-					//sumdiff3(x[i1], t1, x[i3]);   // {a, b, d} <--| {a+b, b, a-b}
-					x[i3] = x[i1] - t1;
-					x[i1] += t1;
+					//sumdiff3(x[i1], t1, x[i3])   // {a, b, d} <--| {a+b, b, a-b}
+					x[i3] = x[i1] - t1
+					x[i1] += t1
 				}
 			}
 
-			ix = (id << 1) - n2;
-			id = id << 2;
-		} while (ix < n);
+			ix = (id << 1) - n2
+			id = id << 2
+		} while (ix < n)
 
-		e = TWO_PI / n2;
+		e = TWO_PI / n2
 
 		for (var j = 1; j < n8; j++) {
-			a = j * e;
-			ss1 = Math.sin(a);
-			cc1 = Math.cos(a);
+			a = j * e
+			ss1 = Math.sin(a)
+			cc1 = Math.cos(a)
 
-			//ss3 = sin(3*a); cc3 = cos(3*a);
-			cc3 = 4*cc1*(cc1*cc1-0.75);
-			ss3 = 4*ss1*(0.75-ss1*ss1);
+			//ss3 = sin(3*a) cc3 = cos(3*a)
+			cc3 = 4*cc1*(cc1*cc1-0.75)
+			ss3 = 4*ss1*(0.75-ss1*ss1)
 
-			ix = 0; id = n2 << 1;
+			ix = 0; id = n2 << 1
 			do {
 				for (i0 = ix; i0 < n; i0 += id) {
-					i1 = i0 + j;
-					i2 = i1 + n4;
-					i3 = i2 + n4;
-					i4 = i3 + n4;
+					i1 = i0 + j
+					i2 = i1 + n4
+					i3 = i2 + n4
+					i4 = i3 + n4
 
-					i5 = i0 + n4 - j;
-					i6 = i5 + n4;
-					i7 = i6 + n4;
-					i8 = i7 + n4;
+					i5 = i0 + n4 - j
+					i6 = i5 + n4
+					i7 = i6 + n4
+					i8 = i7 + n4
 
 					//cmult(c, s, x, y, &u, &v)
-					//cmult(cc1, ss1, x[i7], x[i3], t2, t1); // {u,v} <--| {x*c-y*s, x*s+y*c}
-					t2 = x[i7]*cc1 - x[i3]*ss1;
-					t1 = x[i7]*ss1 + x[i3]*cc1;
+					//cmult(cc1, ss1, x[i7], x[i3], t2, t1) // {u,v} <--| {x*c-y*s, x*s+y*c}
+					t2 = x[i7]*cc1 - x[i3]*ss1
+					t1 = x[i7]*ss1 + x[i3]*cc1
 
-					//cmult(cc3, ss3, x[i8], x[i4], t4, t3);
-					t4 = x[i8]*cc3 - x[i4]*ss3;
-					t3 = x[i8]*ss3 + x[i4]*cc3;
+					//cmult(cc3, ss3, x[i8], x[i4], t4, t3)
+					t4 = x[i8]*cc3 - x[i4]*ss3
+					t3 = x[i8]*ss3 + x[i4]*cc3
 
-					//sumdiff(t2, t4);   // {a, b} <--| {a+b, a-b}
-					st1 = t2 - t4;
-					t2 += t4;
-					t4 = st1;
+					//sumdiff(t2, t4)   // {a, b} <--| {a+b, a-b}
+					st1 = t2 - t4
+					t2 += t4
+					t4 = st1
 
-					//sumdiff(t2, x[i6], x[i8], x[i3]); // {s, d}  <--| {a+b, a-b}
-					//st1 = x[i6]; x[i8] = t2 + st1; x[i3] = t2 - st1;
-					x[i8] = t2 + x[i6];
-					x[i3] = t2 - x[i6];
+					//sumdiff(t2, x[i6], x[i8], x[i3]) // {s, d}  <--| {a+b, a-b}
+					//st1 = x[i6] x[i8] = t2 + st1 x[i3] = t2 - st1
+					x[i8] = t2 + x[i6]
+					x[i3] = t2 - x[i6]
 
-					//sumdiff_r(t1, t3); // {a, b} <--| {a+b, b-a}
-					st1 = t3 - t1;
-					t1 += t3;
-					t3 = st1;
+					//sumdiff_r(t1, t3) // {a, b} <--| {a+b, b-a}
+					st1 = t3 - t1
+					t1 += t3
+					t3 = st1
 
-					//sumdiff(t3, x[i2], x[i4], x[i7]); // {s, d}  <--| {a+b, a-b}
-					//st1 = x[i2]; x[i4] = t3 + st1; x[i7] = t3 - st1;
-					x[i4] = t3 + x[i2];
-					x[i7] = t3 - x[i2];
+					//sumdiff(t3, x[i2], x[i4], x[i7]) // {s, d}  <--| {a+b, a-b}
+					//st1 = x[i2] x[i4] = t3 + st1 x[i7] = t3 - st1
+					x[i4] = t3 + x[i2]
+					x[i7] = t3 - x[i2]
 
-					//sumdiff3(x[i1], t1, x[i6]);   // {a, b, d} <--| {a+b, b, a-b}
-					x[i6] = x[i1] - t1;
-					x[i1] += t1;
+					//sumdiff3(x[i1], t1, x[i6])   // {a, b, d} <--| {a+b, b, a-b}
+					x[i6] = x[i1] - t1
+					x[i1] += t1
 
-					//diffsum3_r(t4, x[i5], x[i2]); // {a, b, s} <--| {a, b-a, a+b}
-					x[i2] = t4 + x[i5];
-					x[i5] -= t4;
+					//diffsum3_r(t4, x[i5], x[i2]) // {a, b, s} <--| {a, b-a, a+b}
+					x[i2] = t4 + x[i5]
+					x[i5] -= t4
 				}
 
-				ix = (id << 1) - n2;
-				id = id << 2;
+				ix = (id << 1) - n2
+				id = id << 2
 
-			} while (ix < n);
+			} while (ix < n)
 		}
 	}
 
 	while (--i) {
-		rval = x[i];
-		ival = x[n-i-1];
-		mag = bSi * sqrt(rval * rval + ival * ival);
-		spectrum[i] = mag;
+		rval = x[i]
+		ival = x[n-i-1]
+		mag = bSi * sqrt(rval * rval + ival * ival)
+		spectrum[i] = mag
 	}
 
-	spectrum[0] = Math.abs(bSi * x[0]);
+	spectrum[0] = Math.abs(bSi * x[0])
 
-	return spectrum;
+	return spectrum
 }
 
 
 function reverseBinPermute (N, dest, source) {
 	var halfSize    = N >>> 1,
 		nm1         = N - 1,
-		i = 1, r = 0, h;
+		i = 1, r = 0, h
 
-	dest[0] = source[0];
+	dest[0] = source[0]
 
 	do {
-		r += halfSize;
-		dest[i] = source[r];
-		dest[r] = source[i];
+		r += halfSize
+		dest[i] = source[r]
+		dest[r] = source[i]
 
-		i++;
+		i++
 
-		h = halfSize << 1;
+		h = halfSize << 1
 
-		while (h = h >> 1, !((r ^= h) & h));
+		while (h = h >> 1, !((r ^= h) & h)) {}
 
 		if (r >= i) {
-			dest[i]     = source[r];
-			dest[r]     = source[i];
+			dest[i]     = source[r]
+			dest[r]     = source[i]
 
-			dest[nm1-i] = source[nm1-r];
-			dest[nm1-r] = source[nm1-i];
+			dest[nm1-i] = source[nm1-r]
+			dest[nm1-r] = source[nm1-i]
 		}
-		i++;
-	} while (i < halfSize);
+		i++
+	} while (i < halfSize)
 
-	dest[nm1] = source[nm1];
-};
+	dest[nm1] = source[nm1]
+}
+
 },{}],20:[function(require,module,exports){
 'use strict';
 module.exports = function (buf) {
@@ -884,52 +886,58 @@ var formats = {
   0x0003: "lpcm"
 };
 
-function decode(buffer) {
+function decodeSync(buffer, opts) {
+  opts = opts || {};
+
   if (global.Buffer && buffer instanceof global.Buffer) {
     buffer = Uint8Array.from(buffer).buffer;
   }
 
-  return new Promise(function(resolve, reject) {
-    var dataView = new DataView(buffer);
-    var reader = createReader(dataView);
+  var dataView = new DataView(buffer);
+  var reader = createReader(dataView);
 
-    if (reader.string(4) !== "RIFF") {
-      return reject(new TypeError("Invalid WAV file"));
-    }
+  if (reader.string(4) !== "RIFF") {
+    throw new TypeError("Invalid WAV file");
+  }
 
-    reader.uint32(); // skip file length
+  reader.uint32(); // skip file length
 
-    if (reader.string(4) !== "WAVE") {
-      return reject(new TypeError("Invalid WAV file"));
-    }
+  if (reader.string(4) !== "WAVE") {
+    throw new TypeError("Invalid WAV file");
+  }
 
-    var format = null;
-    var audioData = null;
+  var format = null;
+  var audioData = null;
 
-    do {
-      var chunkType = reader.string(4);
-      var chunkSize = reader.uint32();
+  do {
+    var chunkType = reader.string(4);
+    var chunkSize = reader.uint32();
 
-      switch (chunkType) {
-      case "fmt ":
-        format = decodeFormat(reader, chunkSize);
-        if (format instanceof Error) {
-          return reject(format);
-        }
-        break;
-      case "data":
-        audioData = decodeData(reader, chunkSize, format);
-        if (audioData instanceof Error) {
-          return reject(format);
-        }
-        break;
-      default:
-        reader.skip(chunkSize);
-        break;
+    switch (chunkType) {
+    case "fmt ":
+      format = decodeFormat(reader, chunkSize);
+      if (format instanceof Error) {
+        throw format;
       }
-    } while (audioData === null);
+      break;
+    case "data":
+      audioData = decodeData(reader, chunkSize, format, opts);
+      if (audioData instanceof Error) {
+        throw audioData;
+      }
+      break;
+    default:
+      reader.skip(chunkSize);
+      break;
+    }
+  } while (audioData === null);
 
-    resolve(audioData);
+  return audioData;
+}
+
+function decode(buffer, opts) {
+  return new Promise(function(resolve) {
+    resolve(decodeSync(buffer, opts));
   });
 }
 
@@ -954,7 +962,9 @@ function decodeFormat(reader, chunkSize) {
   return format;
 }
 
-function decodeData(reader, chunkSize, format) {
+function decodeData(reader, chunkSize, format, opts) {
+  chunkSize = Math.min(chunkSize, reader.remain());
+
   var length = Math.floor(chunkSize / format.blockSize);
   var numberOfChannels = format.numberOfChannels;
   var sampleRate = format.sampleRate;
@@ -964,7 +974,7 @@ function decodeData(reader, chunkSize, format) {
     channelData[ch] = new Float32Array(length);
   }
 
-  var retVal = readPCM(reader, channelData, length, format);
+  var retVal = readPCM(reader, channelData, length, format, opts);
 
   if (retVal instanceof Error) {
     return retVal;
@@ -978,10 +988,10 @@ function decodeData(reader, chunkSize, format) {
   };
 }
 
-function readPCM(reader, channelData, length, format) {
+function readPCM(reader, channelData, length, format, opts) {
   var bitDepth = format.bitDepth;
-  var floatingPoint = format.floatingPoint ? "f" : "";
-  var methodName = "pcm" + bitDepth + floatingPoint;
+  var decoderOption = format.floatingPoint ? "f" : opts.symmetric ? "s" : "";
+  var methodName = "pcm" + bitDepth + decoderOption;
 
   if (!reader[methodName]) {
     return new TypeError("Not supported bit depth: " + format.bitDepth);
@@ -1003,6 +1013,9 @@ function createReader(dataView) {
   var pos = 0;
 
   return {
+    remain: function() {
+      return dataView.byteLength - pos;
+    },
     skip: function(n) {
       pos += n;
     },
@@ -1050,12 +1063,26 @@ function createReader(dataView) {
 
       return data < 0 ? data / 128 : data / 127;
     },
+    pcm8s: function() {
+      var data = dataView.getUint8(pos) - 127.5;
+
+      pos += 1;
+
+      return data / 127.5;
+    },
     pcm16: function() {
       var data = dataView.getInt16(pos, true);
 
       pos += 2;
 
       return data < 0 ? data / 32768 : data / 32767;
+    },
+    pcm16s: function() {
+      var data = dataView.getInt16(pos, true);
+
+      pos += 2;
+
+      return data / 32768;
     },
     pcm24: function() {
       var x0 = dataView.getUint8(pos + 0);
@@ -1068,12 +1095,30 @@ function createReader(dataView) {
 
       return data < 0 ? data / 8388608 : data / 8388607;
     },
+    pcm24s: function() {
+      var x0 = dataView.getUint8(pos + 0);
+      var x1 = dataView.getUint8(pos + 1);
+      var x2 = dataView.getUint8(pos + 2);
+      var xx = (x0 + (x1 << 8) + (x2 << 16));
+      var data = xx > 0x800000 ? xx - 0x1000000 : xx;
+
+      pos += 3;
+
+      return data / 8388608;
+    },
     pcm32: function() {
       var data = dataView.getInt32(pos, true);
 
       pos += 4;
 
       return data < 0 ? data / 2147483648 : data / 2147483647;
+    },
+    pcm32s: function() {
+      var data = dataView.getInt32(pos, true);
+
+      pos += 4;
+
+      return data / 2147483648;
     },
     pcm32f: function() {
       var data = dataView.getFloat32(pos, true);
@@ -1093,45 +1138,50 @@ function createReader(dataView) {
 }
 
 module.exports.decode = decode;
+module.exports.decode.sync = decodeSync;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],28:[function(require,module,exports){
 "use strict";
 
-function encode(audioData, opts) {
+function encodeSync(audioData, opts) {
   opts = opts || {};
 
-  return new Promise(function(resolve, reject) {
-    audioData = toAudioData(audioData);
+  audioData = toAudioData(audioData);
 
-    if (audioData === null) {
-      return reject(new TypeError("Invalid AudioData"));
-    }
+  if (audioData === null) {
+    throw new TypeError("Invalid AudioData");
+  }
 
-    var floatingPoint = !!(opts.floatingPoint || opts.float);
-    var bitDepth = floatingPoint ? 32 : ((opts.bitDepth|0) || 16);
-    var bytes = bitDepth >> 3;
-    var length = audioData.length * audioData.numberOfChannels * bytes;
-    var dataView = new DataView(new Uint8Array(44 + length).buffer);
-    var writer = createWriter(dataView);
+  var floatingPoint = !!(opts.floatingPoint || opts.float);
+  var bitDepth = floatingPoint ? 32 : ((opts.bitDepth|0) || 16);
+  var bytes = bitDepth >> 3;
+  var length = audioData.length * audioData.numberOfChannels * bytes;
+  var dataView = new DataView(new Uint8Array(44 + length).buffer);
+  var writer = createWriter(dataView);
 
-    var format = {
-      formatId: floatingPoint ? 0x0003 : 0x0001,
-      floatingPoint: floatingPoint,
-      numberOfChannels: audioData.numberOfChannels,
-      sampleRate: audioData.sampleRate,
-      bitDepth: bitDepth
-    };
+  var format = {
+    formatId: floatingPoint ? 0x0003 : 0x0001,
+    floatingPoint: floatingPoint,
+    numberOfChannels: audioData.numberOfChannels,
+    sampleRate: audioData.sampleRate,
+    bitDepth: bitDepth
+  };
 
-    writeHeader(writer, format, dataView.buffer.byteLength - 8);
+  writeHeader(writer, format, dataView.buffer.byteLength - 8);
 
-    var err = writeData(writer, format, length, audioData);
+  var err = writeData(writer, format, length, audioData, opts);
 
-    if (err instanceof Error) {
-      return reject(err);
-    }
+  if (err instanceof Error) {
+    throw err;
+  }
 
-    resolve(dataView.buffer);
+  return dataView.buffer;
+}
+
+function encode(audioData, opts) {
+  return new Promise(function(resolve) {
+    resolve(encodeSync(audioData, opts));
   });
 }
 
@@ -1173,10 +1223,10 @@ function writeHeader(writer, format, length) {
   writer.uint16(format.bitDepth);
 }
 
-function writeData(writer, format, length, audioData) {
+function writeData(writer, format, length, audioData, opts) {
   var bitDepth = format.bitDepth;
-  var floatingPoint = format.floatingPoint ? "f" : "";
-  var methodName = "pcm" + bitDepth + floatingPoint;
+  var encoderOption = format.floatingPoint ? "f" : opts.symmetric ? "s" : "";
+  var methodName = "pcm" + bitDepth + encoderOption;
 
   if (!writer[methodName]) {
     return new TypeError("Not supported bit depth: " + bitDepth);
@@ -1220,19 +1270,46 @@ function createWriter(dataView) {
     pcm8: function(value) {
       value = Math.max(-1, Math.min(value, +1));
       value = (value * 0.5 + 0.5) * 255;
-      dataView.setUint8(pos, value|0, true);
+      value = Math.round(value)|0;
+      dataView.setUint8(pos, value, true);
+      pos += 1;
+    },
+    pcm8s: function(value) {
+      value = Math.round(value * 128) + 128;
+      value = Math.max(0, Math.min(value, 255));
+      dataView.setUint8(pos, value, true);
       pos += 1;
     },
     pcm16: function(value) {
       value = Math.max(-1, Math.min(value, +1));
       value = value < 0 ? value * 32768 : value * 32767;
-      dataView.setInt16(pos, value|0, true);
+      value = Math.round(value)|0;
+      dataView.setInt16(pos, value, true);
+      pos += 2;
+    },
+    pcm16s: function(value) {
+      value = Math.round(value * 32768);
+      value = Math.max(-32768, Math.min(value, 32767));
+      dataView.setInt16(pos, value, true);
       pos += 2;
     },
     pcm24: function(value) {
       value = Math.max(-1, Math.min(value, +1));
       value = value < 0 ? 0x1000000 + value * 8388608 : value * 8388607;
-      value = value|0;
+      value = Math.round(value)|0;
+
+      var x0 = (value >>  0) & 0xFF;
+      var x1 = (value >>  8) & 0xFF;
+      var x2 = (value >> 16) & 0xFF;
+
+      dataView.setUint8(pos + 0, x0);
+      dataView.setUint8(pos + 1, x1);
+      dataView.setUint8(pos + 2, x2);
+      pos += 3;
+    },
+    pcm24s: function(value) {
+      value = Math.round(value * 8388608);
+      value = Math.max(-8388608, Math.min(value, 8388607));
 
       var x0 = (value >>  0) & 0xFF;
       var x1 = (value >>  8) & 0xFF;
@@ -1246,7 +1323,14 @@ function createWriter(dataView) {
     pcm32: function(value) {
       value = Math.max(-1, Math.min(value, +1));
       value = value < 0 ? value * 2147483648 : value * 2147483647;
-      dataView.setInt32(pos, value|0, true);
+      value = Math.round(value)|0;
+      dataView.setInt32(pos, value, true);
+      pos += 4;
+    },
+    pcm32s: function(value) {
+      value = Math.round(value * 2147483648);
+      value = Math.max(-2147483648, Math.min(value, +2147483647));
+      dataView.setInt32(pos, value, true);
       pos += 4;
     },
     pcm32f: function(value) {
@@ -1257,6 +1341,7 @@ function createWriter(dataView) {
 }
 
 module.exports.encode = encode;
+module.exports.encode.sync = encodeSync;
 
 },{}],29:[function(require,module,exports){
 "use strict";
@@ -7658,6 +7743,8 @@ var allowedOscillatorTypes = [SINE, SAWTOOTH, TRIANGLE, SQUARE];
 var DEFAULT_TYPE = SINE;
 var DEFAULT_FREQUENCY = 440;
 var DEFAULT_DETUNE = 0;
+var DEFAULT_PWM = 0.5;
+var DEFAULT_PHASE_SHIFT = 0;
 
 var OscillatorNode = function (_AudioScheduledSource) {
   _inherits(OscillatorNode, _AudioScheduledSource);
@@ -7668,6 +7755,8 @@ var OscillatorNode = function (_AudioScheduledSource) {
    * @param {string}       opts.type
    * @param {number}       opts.frequency
    * @param {number}       opts.detune
+   * @param {number}       opts.pulseWidth
+   * @param {number}       opts.phaseShift
    */
   function OscillatorNode(context) {
     var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -7677,11 +7766,15 @@ var OscillatorNode = function (_AudioScheduledSource) {
     var type = defaults(opts.type, DEFAULT_TYPE);
     var frequency = defaults(opts.frequency, DEFAULT_FREQUENCY);
     var detune = defaults(opts.detune, DEFAULT_DETUNE);
+    var pulseWidth = defaults(opts.pulseWidth, DEFAULT_PWM);
+    var phaseShift = defaults(opts.phaseShift, DEFAULT_PHASE_SHIFT);
 
     var _this = _possibleConstructorReturn(this, (OscillatorNode.__proto__ || Object.getPrototypeOf(OscillatorNode)).call(this, context, opts));
 
     _this._frequency = _this.addParam(AUDIO_RATE, frequency);
     _this._detune = _this.addParam(AUDIO_RATE, detune);
+    _this._pulseWidth = _this.addParam(AUDIO_RATE, pulseWidth);
+    _this._phaseShift = _this.addParam(AUDIO_RATE, phaseShift);
     _this._type = type;
     _this._periodicWave = _this.buildPeriodicWave(_this._type);
     _this._waveTable = null;
@@ -7784,6 +7877,26 @@ var OscillatorNode = function (_AudioScheduledSource) {
       }
 
       return DefaultPeriodicWaves[key];
+    }
+
+    /**
+     * @param {AudioParam}
+     */
+
+  }, {
+    key: "setPhaseShift",
+    value: function setPhaseShift(value) {
+      this._phaseShift.value = value;
+    }
+  }, {
+    key: "phaseLockTo",
+    value: function phaseLockTo(oscillator) {
+      this._phaseShift.value = oscillator._phaseShift.value;
+    }
+  }, {
+    key: "pulseWidth",
+    get: function get() {
+      return this._pulseWidth;
     }
   }]);
 
@@ -10922,6 +11035,8 @@ var OscillatorNodeDSP = {
   dspSine: function dspSine(output, writeIndex, blockSize, sampleRate) {
     var frequency = this._frequency;
     var detune = this._detune;
+    var pulseWidth = this._pulseWidth;
+    var phaseShift = this._phaseShift;
     var algorithm = frequency.hasSampleAccurateValues() * 2 + detune.hasSampleAccurateValues();
     var frequencyToPhaseIncr = 2 * Math.PI / sampleRate;
 
@@ -10934,7 +11049,7 @@ var OscillatorNodeDSP = {
       var phaseIncr = frequencyToPhaseIncr * computedFrequency;
 
       while (writeIndex < blockSize) {
-        output[writeIndex++] = Math.sin(phase);
+        output[writeIndex++] = Math.sin(phase + 2 * Math.PI * phaseShift.getValue()) * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
         phase += phaseIncr;
       }
     } else {
@@ -10946,7 +11061,7 @@ var OscillatorNodeDSP = {
         var _detuneValue = detuneValues[writeIndex];
         var _computedFrequency = _frequencyValue * Math.pow(2, _detuneValue / 1200);
 
-        output[writeIndex++] = Math.sin(phase);
+        output[writeIndex++] = Math.sin(phase + 2 * Math.PI * phaseShift.getValue()) * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
         phase += frequencyToPhaseIncr * _computedFrequency;
       }
     }
@@ -10958,6 +11073,8 @@ var OscillatorNodeDSP = {
   dspWave: function dspWave(output, writeIndex, blockSize, sampleRate) {
     var frequency = this._frequency;
     var detune = this._detune;
+    var pulseWidth = this._pulseWidth;
+    var phaseShift = this._phaseShift;
     var algorithm = frequency.hasSampleAccurateValues() * 2 + detune.hasSampleAccurateValues();
     var waveTable = this._waveTable;
     var waveTableLength = waveTable.length - 1;
@@ -10972,9 +11089,9 @@ var OscillatorNodeDSP = {
       var phaseIncr = frequencyToPhaseIncr * computedFrequency;
 
       while (writeIndex < blockSize) {
-        var idx = phase * waveTableLength % waveTableLength;
-        var v0 = waveTable[idx | 0];
-        var v1 = waveTable[(idx | 0) + 1];
+        var idx = (phase * waveTableLength + phaseShift.getValue() * waveTableLength) % waveTableLength;
+        var v0 = waveTable[idx | 0] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
+        var v1 = waveTable[(idx | 0) + 1] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
 
         output[writeIndex++] = v0 + idx % 1 * (v1 - v0);
         phase += phaseIncr;
@@ -10987,9 +11104,9 @@ var OscillatorNodeDSP = {
         var _frequencyValue2 = frequencyValues[writeIndex];
         var _detuneValue2 = detuneValues[writeIndex];
         var _computedFrequency2 = _frequencyValue2 * Math.pow(2, _detuneValue2 / 1200);
-        var _idx = phase * waveTableLength % waveTableLength;
-        var _v = waveTable[_idx | 0];
-        var _v2 = waveTable[(_idx | 0) + 1];
+        var _idx = (phase * waveTableLength + phaseShift.getValue() * waveTableLength) % waveTableLength;
+        var _v = waveTable[_idx | 0] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
+        var _v2 = waveTable[(_idx | 0) + 1] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
 
         output[writeIndex++] = _v + _idx % 1 * (_v2 - _v);
         phase += frequencyToPhaseIncr * _computedFrequency2;
