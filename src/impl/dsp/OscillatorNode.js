@@ -47,6 +47,8 @@ const OscillatorNodeDSP = {
   dspSine(output, writeIndex, blockSize, sampleRate) {
     const frequency = this._frequency;
     const detune = this._detune;
+    const pulseWidth = this._pulseWidth;
+    const phaseShift = this._phaseShift;
     const algorithm = frequency.hasSampleAccurateValues() * 2 + detune.hasSampleAccurateValues();
     const frequencyToPhaseIncr = 2 * Math.PI / sampleRate;
 
@@ -59,7 +61,7 @@ const OscillatorNodeDSP = {
       const phaseIncr = frequencyToPhaseIncr * computedFrequency;
 
       while (writeIndex < blockSize) {
-        output[writeIndex++] = Math.sin(phase);
+        output[writeIndex++] = Math.sin(phase + 2 * Math.PI * phaseShift.getValue()) * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
         phase += phaseIncr;
       }
     } else {
@@ -71,7 +73,7 @@ const OscillatorNodeDSP = {
         const detuneValue = detuneValues[writeIndex];
         const computedFrequency = frequencyValue * Math.pow(2, detuneValue / 1200);
 
-        output[writeIndex++] = Math.sin(phase);
+        output[writeIndex++] = Math.sin(phase + 2 * Math.PI * phaseShift.getValue()) * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
         phase += frequencyToPhaseIncr * computedFrequency;
       }
     }
@@ -84,6 +86,8 @@ const OscillatorNodeDSP = {
   dspWave(output, writeIndex, blockSize, sampleRate) {
     const frequency = this._frequency;
     const detune = this._detune;
+    const pulseWidth = this._pulseWidth;
+    const phaseShift = this._phaseShift;
     const algorithm = frequency.hasSampleAccurateValues() * 2 + detune.hasSampleAccurateValues();
     const waveTable = this._waveTable;
     const waveTableLength = waveTable.length - 1;
@@ -98,9 +102,9 @@ const OscillatorNodeDSP = {
       const phaseIncr = frequencyToPhaseIncr * computedFrequency;
 
       while (writeIndex < blockSize) {
-        const idx = (phase * waveTableLength) % waveTableLength;
-        const v0 = waveTable[(idx|0)];
-        const v1 = waveTable[(idx|0) + 1];
+        const idx = (phase * waveTableLength + phaseShift.getValue() * waveTableLength) % waveTableLength;
+        const v0 = waveTable[(idx|0)] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
+        const v1 = waveTable[((idx|0) + 1)] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
 
         output[writeIndex++] = v0 + (idx % 1) * (v1 - v0);
         phase += phaseIncr;
@@ -113,9 +117,9 @@ const OscillatorNodeDSP = {
         const frequencyValue = frequencyValues[writeIndex];
         const detuneValue = detuneValues[writeIndex];
         const computedFrequency = frequencyValue * Math.pow(2, detuneValue / 1200);
-        const idx = (phase * waveTableLength) % waveTableLength;
-        const v0 = waveTable[(idx|0)];
-        const v1 = waveTable[(idx|0) + 1];
+        const idx = (phase * waveTableLength + phaseShift.getValue() * waveTableLength) % waveTableLength;
+        const v0 = waveTable[(idx|0)] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
+        const v1 = waveTable[((idx|0) + 1)] * (phase < Math.PI * pulseWidth.getValue() ? 1 : -1);
 
         output[writeIndex++] = v0 + (idx % 1) * (v1 - v0);
         phase += frequencyToPhaseIncr * computedFrequency;

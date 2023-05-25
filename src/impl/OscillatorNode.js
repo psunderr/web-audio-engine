@@ -16,6 +16,8 @@ const allowedOscillatorTypes = [
 const DEFAULT_TYPE = SINE;
 const DEFAULT_FREQUENCY = 440;
 const DEFAULT_DETUNE = 0;
+const DEFAULT_PWM = 0.5;
+const DEFAULT_PHASE_SHIFT = 0;
 
 class OscillatorNode extends AudioScheduledSourceNode {
   /**
@@ -24,16 +26,22 @@ class OscillatorNode extends AudioScheduledSourceNode {
    * @param {string}       opts.type
    * @param {number}       opts.frequency
    * @param {number}       opts.detune
+   * @param {number}       opts.pulseWidth
+   * @param {number}       opts.phaseShift
    */
   constructor(context, opts = {}) {
     let type = defaults(opts.type, DEFAULT_TYPE);
     let frequency = defaults(opts.frequency, DEFAULT_FREQUENCY);
     let detune = defaults(opts.detune, DEFAULT_DETUNE);
+    let pulseWidth = defaults(opts.pulseWidth, DEFAULT_PWM);
+    let phaseShift = defaults(opts.phaseShift, DEFAULT_PHASE_SHIFT);
 
     super(context, opts);
 
     this._frequency = this.addParam(AUDIO_RATE, frequency);
     this._detune = this.addParam(AUDIO_RATE, detune);
+    this._pulseWidth = this.addParam(AUDIO_RATE, pulseWidth);
+    this._phaseShift = this.addParam(AUDIO_RATE, phaseShift);
     this._type = type;
     this._periodicWave = this.buildPeriodicWave(this._type);
     this._waveTable = null;
@@ -113,6 +121,21 @@ class OscillatorNode extends AudioScheduledSourceNode {
     }
 
     return DefaultPeriodicWaves[key];
+  }
+
+  /**
+   * @param {AudioParam}
+   */
+  get pulseWidth() {
+    return this._pulseWidth;
+  }
+
+  setPhaseShift(value) {
+    this._phaseShift.value = value;
+  }
+
+  phaseLockTo(oscillator) {
+    this._phaseShift.value = oscillator._phaseShift.value;
   }
 }
 
